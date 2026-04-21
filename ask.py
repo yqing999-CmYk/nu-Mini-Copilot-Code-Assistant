@@ -8,6 +8,7 @@ from rich.markdown import Markdown
 
 from codeassist import embeddings as emb
 from codeassist import llm
+from codeassist.errors import handle_errors
 
 console = Console()
 
@@ -48,15 +49,16 @@ def ask_command(
     console.print()
     collected: list[str] = []
 
-    with Live(console=console, refresh_per_second=15, vertical_overflow="visible") as live:
-        for chunk in llm.stream_ask(
-            question,
-            file_content=file_content,
-            file_name=file_name,
-            context_chunks=context_chunks,
-            smart=smart,
-        ):
-            collected.append(chunk)
-            live.update(Markdown("".join(collected)))
+    with handle_errors():
+        with Live(console=console, refresh_per_second=15, vertical_overflow="visible") as live:
+            for chunk in llm.stream_ask(
+                question,
+                file_content=file_content,
+                file_name=file_name,
+                context_chunks=context_chunks,
+                smart=smart,
+            ):
+                collected.append(chunk)
+                live.update(Markdown("".join(collected)))
 
     console.print()
